@@ -1,0 +1,31 @@
+# Config file for Air
+# https://github.com/cosmtrek/air
+
+[build]
+# Command to build the application
+cmd = "go build -o ./tmp/main ."
+
+# Binary file to run
+bin = "tmp/main"
+
+# Watch these files/directories
+include_ext = ["go", "html"]
+exclude_dir = ["tmp", "vendor"]
+
+# If an empty line is provided, the app's stdout will be output here
+# stdout = ""
+
+# Delay before restart (default is 1s)
+delay = 2000
+
+# Change colors
+color_scheme = "default"
+
+# Logging configuration
+log_level = "info"
+
+# If you use a reverse proxy (e.g. ngrok, localtunnel), use this option to change the server address to listen to (e.g. 127.0.0.1:8081)
+address = "127.0.0.1:8080"
+
+# Optionally specify a PID file to use
+pid_file = ".air.pid"
