@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List With Go</title>
+    <style>
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+
+            input {
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+            button {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+        }
+        .tasks-container {
+            ul {
+                list-style: none;
+                padding: 0;
+
+                .task-li {
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    margin-bottom: 10px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+
+                     button {
+                         padding: 5px;
+                         border: 1px solid #ccc;
+                         border-radius: 5px;
+                         cursor: pointer;
+                         margin-left: auto;
+                         color: white;
+                         background: red;
+                     }
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form class="form" id="form">
+            <input type="text" id="task" placeholder="Enter a task">
+            <button id="add" type="submit">Add</button>
+        </form>
+        <div class="tasks-container">
+            <ul id="tasks"></ul>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('form');
+        const addBtn = document.getElementById('add');
+        const taskInpt = document.getElementById('task');
+        const tasksUl = document.getElementById('tasks');
+
+        const fetchData = () => {
+            fetch('/todos')
+            .then(response => response.json())
+            .then(data => {
+                data.sort((a, b) => a.id - b.id)
+                tasksUl.innerHTML = '';
+                data.forEach(task => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<input type="checkbox" ${task.completed ? 'checked' : ''} onclick="handleCompleteTask(${task.id})" id="li-${task.id}"> <label for="${task.id}">${task.title}</label> <button onclick="handleDeleteTask(${task.id})">Delete</button>`
+                    li.className = 'task-li'
+                    tasksUl.appendChild(li);
+                });
+            });
+        }
+        fetchData();
+
+        const handleCompleteTask = (id) => {
+            console.log(id)
+            fetch(`/todos/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const updatedTask = {
+                    ...data,
+                    completed: !data.completed
+                }
+
+                fetch(`/todos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedTask)
+                })
+                .then(response => response.json())
+
+          })
+        }
+
+        const handleDeleteTask = (id) => {
+            fetch(`/todos/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(() => fetchData())
+        }
+
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const task = taskInpt.value;
+            if (task) {
+                fetch('/todos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: task })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const {id, title, comlited} = data
+                    const li = document.createElement('li');
+                    li.innerHTML = `<input type="checkbox" ${comlited ? 'checked' : ''} onclick="handleCompleteTask(${id})" id="li-${id}"><label for="${id}">${title}</label> <button onclick="handleDeleteTask(${id})">Delete</button>`
+                    li.className = 'task-li'
+                    tasksUl.appendChild(li);
+                });
+            }
+        });
+
+    </script>
+</body>
+</html>
